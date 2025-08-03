@@ -4,6 +4,7 @@ import static spark.Spark.*;
 
 import java.nio.file.*;
 
+import com.manning.apisecurityinaction.token.TokenStore;
 import org.dalesbred.Database;
 import org.dalesbred.result.EmptyResultException;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -18,6 +19,7 @@ public class Main {
 
     public static void main(String... args) throws Exception {
         secure("localhost.p12", "changeit", null, null);
+        Spark.staticFiles.location("/public");
         var datasource = JdbcConnectionPool.create(
             "jdbc:h2:mem:natter", "natter", "password");
         var database = Database.forDataSource(datasource);
@@ -58,10 +60,16 @@ public class Main {
             response.header("Server", "");
         });
 
+        TokenStore tokenStore = null;
+        var tokenController = new TokenController(tokenStore);
+
         before(userController::authenticate);
 
         before(auditController::auditRequestStart);
         afterAfter(auditController::auditRequestEnd);
+
+            before("/sessions", userController::requireAuthentication);
+            post("/sessions", tokenController::login);
 
         before("/spaces", userController::requireAuthentication);
         post("/spaces", spaceController::createSpace);
