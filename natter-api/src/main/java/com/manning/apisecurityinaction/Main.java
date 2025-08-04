@@ -4,6 +4,7 @@ import static spark.Spark.*;
 
 import java.nio.file.*;
 
+import com.manning.apisecurityinaction.token.CookieTokenStore;
 import com.manning.apisecurityinaction.token.TokenStore;
 import org.dalesbred.Database;
 import org.dalesbred.result.EmptyResultException;
@@ -60,10 +61,11 @@ public class Main {
             response.header("Server", "");
         });
 
-        TokenStore tokenStore = null;
+        TokenStore tokenStore = new CookieTokenStore();
         var tokenController = new TokenController(tokenStore);
 
         before(userController::authenticate);
+        before(tokenController::validateToken);
 
         before(auditController::auditRequestStart);
         afterAfter(auditController::auditRequestEnd);
