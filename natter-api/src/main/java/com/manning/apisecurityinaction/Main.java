@@ -70,8 +70,8 @@ public class Main {
         before(auditController::auditRequestStart);
         afterAfter(auditController::auditRequestEnd);
 
-            before("/sessions", userController::requireAuthentication);
-            post("/sessions", tokenController::login);
+        before("/sessions", userController::requireAuthentication);
+        post("/sessions", tokenController::login);
 
         before("/spaces", userController::requireAuthentication);
         post("/spaces", spaceController::createSpace);
