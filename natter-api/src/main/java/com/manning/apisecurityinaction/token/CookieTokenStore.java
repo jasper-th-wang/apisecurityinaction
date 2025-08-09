@@ -55,7 +55,24 @@ public class CookieTokenStore implements TokenStore {
         return Optional.of(token);
     }
 
-    // use java message digest class to hash session id
+
+    @Override
+	public void revoke(Request request, String tokenId) {
+        // checking CSRF token to prevent malicious logging out
+        var session = request.session(false);
+        if (session == null) return;
+
+        var provided = Base64url.decode(tokenId);
+        var computed = sha256(session.id());
+
+        if (!MessageDigest.isEqual(computed, provided)) {
+            return;
+        }
+
+        session.invalidate();
+	}
+
+	// use java message digest class to hash session id
     static byte[] sha256(String tokenId) {
         try {
             var sha256 = MessageDigest.getInstance("SHA-256");
