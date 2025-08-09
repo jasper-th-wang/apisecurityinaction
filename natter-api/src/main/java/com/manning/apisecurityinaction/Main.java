@@ -3,6 +3,7 @@ package com.manning.apisecurityinaction;
 import static spark.Spark.*;
 
 import java.nio.file.*;
+import java.util.Set;
 
 import com.manning.apisecurityinaction.token.CookieTokenStore;
 import com.manning.apisecurityinaction.token.TokenStore;
@@ -19,6 +20,7 @@ import spark.*;
 public class Main {
 
     public static void main(String... args) throws Exception {
+        port(args.length > 0 ? Integer.parseInt((args[0])) : spark.Service.SPARK_DEFAULT_PORT);
         secure("localhost.p12", "changeit", null, null);
         Spark.staticFiles.location("/public");
         var datasource = JdbcConnectionPool.create(
@@ -40,6 +42,8 @@ public class Main {
                 halt(429);
             }
         });
+
+        before(new CorsFilter(Set.of("https://localhost:9999")));
 
         before(((request, response) -> {
             if (request.requestMethod().equals("POST") &&
