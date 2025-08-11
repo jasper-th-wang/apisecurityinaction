@@ -5,7 +5,8 @@ function login(username, password) {
     
     fetch(apiUrl + '/sessions', {
         method: 'POST',
-        credentials: 'include',
+        // remove as Access-Control-Allow-Credentials is removed at Cors filter class
+        // credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': credentials
