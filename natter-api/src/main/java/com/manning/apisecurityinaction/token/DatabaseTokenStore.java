@@ -9,6 +9,8 @@ import java.security.SecureRandom;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class DatabaseTokenStore implements TokenStore {
     private final Database database;
@@ -17,6 +19,8 @@ public class DatabaseTokenStore implements TokenStore {
     public DatabaseTokenStore(Database database) {
         this.database = database;
         this.secureRandom = new SecureRandom();
+        Executors.newSingleThreadScheduledExecutor()
+            .scheduleAtFixedRate(this::deleteExpiredTokens, 10, 10, TimeUnit.MINUTES);
     }
 
     // Generate unguessable token Id
@@ -67,4 +71,9 @@ public class DatabaseTokenStore implements TokenStore {
                 tokenId);
     }
 
+
+    public void deleteExpiredTokens() {
+        database.update(
+                "DELETE FROM tokens WHERE expiry < current_timestamp");
+    }
 }
