@@ -14,8 +14,7 @@ function login(username, password) {
     .then(res => {
         if (res.ok) {
             res.json().then(json => {
-                document.cookie = 'csrfToken=' + json.token + 
-                    ';Secure;SameSite=strict';
+                localStorage.setItem("token", json.token);
                 window.location.replace('/natter.html');
             });
         }
@@ -38,28 +37,20 @@ function processLoginSubmit(e) {
     return false;
 }
 
-function getCookie(cookieName) {
-    var cookieValue = document.cookie.split(';')
-        .map(item => item.split('='))
-        .map(x => decodeURIComponent(x.trim()))
-        .filter(item => item[0] === cookieName)[0];
-    
-    if (cookieValue) {
-        return cookieValue[1];
-    }
-}
-
 function createSpace(name, owner) {
     let data = {name: name, owner: owner};
-    let csrfToken = getCookie('csrfToken');
+    let token = localStorage.getItem("token");
     
     fetch(apiUrl + '/spaces', {
         method: 'POST',
-        credentials: 'include',
+        // remove so broswer won't send cookies
+        // credentials: 'include',
         body: JSON.stringify(data),
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken
+            // remove because we are not using cookies anymore
+            // 'X-CSRF-Token': csrfToken
+            'Authorization': 'Bearer ' + token
         }
     })
     .then(response => {
