@@ -76,14 +76,23 @@ public class UserController {
 
     public void requireAuthentication(Request request, Response response) {
         if (request.attribute("subject") == null) {
-            // comment this out to stop browser prompting the
-            // default login box.
-            // see page 138
-            // response.header("WWW-Authenticate",
-                    // "Basic realm=\"/\", charset=\"UTF-8\"");
+            // issue a header challenge if no valid credentials present (page 162)
+            response.header("WWW-Authenticate", "Bearer");
             halt(401);
         }
     }
+
+    // Note: cookie version
+    // public void requireAuthentication(Request request, Response response) {
+    //     if (request.attribute("subject") == null) {
+    //         // comment this out to stop browser prompting the
+    //         // default login box.
+    //         // see page 138
+    //         // response.header("WWW-Authenticate",
+    //                 // "Basic realm=\"/\", charset=\"UTF-8\"");
+    //         halt(401);
+    //     }
+    // }
 
     public Filter requirePermission(String method, String permission) {
         return (request, response) -> {
