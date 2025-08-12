@@ -20,17 +20,17 @@ public class TokenController {
     }
 
     public JSONObject login(Request request, Response response) {
-        var tokenId = request.headers("Authorization");
-        if (tokenId == null || !tokenId.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("missing token header");
-        }
+        String subject = request.attribute("subject");
+        var expiry = now().plus(10, ChronoUnit.MINUTES);
 
-        tokenId = tokenId.substring(7);
+        var token = new TokenStore.Token(expiry, subject);
+        var tokenId = tokenStore.create(request, token);
 
-        tokenStore.revoke(request, tokenId);
-        response.status(200);
-        return new JSONObject();
+        response.status(201);
+        return new JSONObject()
+                .put("token", tokenId);
     }
+
 
     public JSONObject logout(Request request, Response response) {
         var tokenId = request.headers("X-CSRF-Token");
