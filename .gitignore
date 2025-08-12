@@ -5,3 +5,4 @@ target/
 .vim/
 localhost.p12
 tags
+keystore.p12
