@@ -2,10 +2,14 @@ package com.manning.apisecurityinaction;
 
 import static spark.Spark.*;
 
+import java.io.FileInputStream;
 import java.nio.file.*;
+import java.security.KeyStore;
 import java.util.Set;
 
 import com.manning.apisecurityinaction.token.CookieTokenStore;
+import com.manning.apisecurityinaction.token.DatabaseTokenStore;
+import com.manning.apisecurityinaction.token.HmacTokenStore;
 import com.manning.apisecurityinaction.token.TokenStore;
 import org.dalesbred.Database;
 import org.dalesbred.result.EmptyResultException;
@@ -65,7 +69,15 @@ public class Main {
             response.header("Server", "");
         });
 
-        TokenStore tokenStore = new CookieTokenStore();
+        var keyPassword = System.getProperty("keystore.password",
+                "changeit").toCharArray();
+        var keyStore = KeyStore.getInstance("PKCS12");
+        keyStore.load(new FileInputStream("keystore.p12"),
+                keyPassword);
+        var macKey = keyStore.getKey("hmac-key", keyPassword);
+
+        var databaseTokenStore = new DatabaseTokenStore(database);
+        var tokenStore = new HmacTokenStore(databaseTokenStore, macKey);
         var tokenController = new TokenController(tokenStore);
 
         before(userController::authenticate);
