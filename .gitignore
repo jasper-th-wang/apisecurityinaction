@@ -2,3 +2,6 @@
 *.iml
 target/
 *.zip
+.vim/
+localhost.p12
+tags
